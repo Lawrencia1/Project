@@ -1,0 +1,833 @@
+---
+title: "Project 1"
+author: "Lawrencia"
+date: "2025-03-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+library(readxl)
+```
+
+
+```{r}
+install.packages("janitor")
+```
+
+
+```{r}
+read_csv("movie.csv")
+```d:/Users/User/Desktop/Lawrencia Coding/learn_R/user.csv
+```
+
+```{r}
+movies <- read_csv("movie.csv")
+```
+```{r}
+movies
+```
+QUESTION 1a; HOW MANY MOVIES BELONG TO A PARTICULAR GENRE
+
+```{r, messages = FALSE}
+message ("to select numeric columns only, due to calculation purposes")
+movies_int <- movies[, sapply(movies, is.numeric)]
+movies_int
+```
+
+
+```{r, message= FALSE}
+message("to remove the first column; movie id, to sum up values for each genre")
+movies_integer <- movies_int[, -c(1)]
+movies_integer
+```
+
+
+```{r, message=FALSE}
+message("sum up individual columns, to know the number of movies per genre")
+moviesum <- colSums(movies_integer, na.rm = TRUE)
+moviesum
+```
+
+1b. Movies with more than 1 genre
+
+```{r, message=FALSE}
+message("to select genre columns relevant for calculation ")
+move <- movies %>% select(`movie title`,  Action, Adventure, Childrens, Comedy, Crime, Documentary, Drama, Fantasy, `Film-Noir`, Horror, Musical, Romance, `Sci-Fi`, Thriller, War, Western)
+```
+
+
+```{r, message=FALSE}
+message("select all rows; 1;1680, and all columns")
+mo <- movies_int[c(1:1680),]
+mo
+```
+
+```{r, message=FALSE}
+message("to add up the values of individual rows, and make the sumed entries a new column; total")
+mot <- mo %>% 
+  mutate(total = rowSums(across(c(Action, Adventure, Animation, Childrens, Comedy, Crime,Documentary, Drama, Fantasy,`Film-Noir`, Horror,  Musical, Mystery,Romance, `Sci-Fi`, Thriller, War, Western ))))
+
+mot
+```
+
+```{r, message=FALSE}
+message("to include column:movie title, to the data set")
+mot <- merge(mot, movies [, c("movie id", "movie title")], by= "movie id")
+mot
+```
+
+```{r, message=FALSE}
+message("to reposition movie title to index position 3")
+moa <- mot %>% relocate(`movie title`, .before = 2)
+moa
+```
+
+```{r, message=FALSE}
+message("to drop irrelevant duplicate columns from table")
+movie_t <- moa %>% select(-`movie title.x`, -`movie title.y`)
+movie_t
+```
+
+```{r, message=FALSE}
+message("to include only movie sums greater than 1")
+movie_data <- movie_t %>% mutate(multiple_genre = if_else(total > 1, total, NA_real_ ))
+movie_data
+```
+
+```{r, message=FALSE}
+message("to select specific columns needed for plotting")
+movie_genre <- movie_data %>% select(`movie id`, `movie title`, multiple_genre)
+movie_genre
+```
+
+
+```{r, message=FALSE}
+message("plotting a bar graph to ill")
+ggplot(data = movie_genre, mapping = aes( x= "movie title", y = "multiple_genre", color = multiple_genre) ) + geom_bar(stat = "identity")
+```
+
+1c.            WHICH GENRE IS MOST LIKED BY USERS
+```{r}
+read_csv("ratings.csv")
+```
+
+
+```{r, message=FALSE}
+message("read in files")
+ratings <-  read_csv("ratings.csv")
+```
+
+
+```{r, message=FALSE}
+message("read in files")
+users <-  read_csv("user.csv")
+```
+
+
+```{r, message=FALSE}
+message("join two files:movies and ratings, by the common column")
+movie_ratings <- full_join(movies, ratings, by = "movie id")
+movie_ratings
+```
+
+
+```{r, message=FALSE}
+message("to create a new column:rates, by selecting ratings greater than 4 ")
+rating_h <-  movie_ratings %>% mutate(rates = if_else(rating > 4, rating, NA_real_))
+rating_h
+```
+
+
+```{r, message=FALSE}
+message("to remove 'na' entries from rates column")
+rh <- rating_h [!is.na(rating_h$rates),]
+rh
+```
+
+```{r, message=FALSE}
+message("exclude non-genre columns and add up genre columns alone")
+rh_sums <- rh %>% select(-c(`movie id`, `movie title`, `release date`,`user id`, rating, timestamp, rates)) %>% colSums(na.rm = TRUE)
+rh_sums
+```
+
+```{r, message=FALSE}
+message("to covert values to a data frame")
+genre_likes <- data.frame(  values = rh_sums)
+genre_likes
+
+```
+
+```{r, message=FALSE}
+message("to arrange values of data frame in descending order")
+genre_likes <- genre_likes %>% arrange(desc(values))
+genre_likes
+```
+
+```{r, message=FALSE}
+message("create a list of the various genres")
+genre_list <- c("Drama", "Comedy", "Action", "Romance", "Thriller", "Sci-Fi", "War", "Adventure", "Crime",  "Mystery", "Childrens", "Musical", "Horror", "Animation", "Film-Noir", "Western", "Documentary",  "Fantasy") 
+```
+
+
+```{r, message=FALSE}
+message("include genre_list to genre_likes dataframe")
+genre_likes$genres <- genre_list
+genre_likes
+```
+
+
+```{r, message=FALSE}
+message("to remove alphabetic ordering of x axis in plot")
+genre_likes$fraction = genre_likes$values / sum(genre_likes$values)
+genre_likes$percentage =  round(genre_likes$fraction * 100, 1)
+genre_likes$label = paste(genre_likes$values, genre_likes$percentage,"%" ,sep= "")    
+```
+
+
+```{r, message=FALSE}
+message("plotting a bar graph distribution of data")
+ggplot(data = genre_likes, aes(x = "values", y = genres, fill = genres)) + geom_bar(stat = "identity", width = 1) + coord_polar(theta = "y") + theme_void() +labs (title = "General Trend of Genres") +
+  geom_text(aes(label = genres), position = position_stack(vjust = 0.1))
+```
+
+1d. WHICH MOVIES ARE MOST LIKED BY USERS
+```{r, message=FALSE}
+message("select columns relating to most liked movies")
+liked_movies <- rh %>% select(c( , "movie id", "movie title", "Drama", "rates"))
+liked_movies
+```
+
+```{r, message=FALSE}
+message("extract only drama movies rated 5 stars")
+lm <- liked_movies %>% filter(Drama == "1")
+lm
+```
+
+```{r, message=FALSE}
+message("eliminate repetitive entries")
+lmovies <- lm %>% distinct(`movie title`, .keep_all = TRUE)
+lmovies
+```
+
+
+```{r, message=FALSE}
+message("select 5 star drama movie titles")
+lmovies <- lmovies %>% select(, "movie title")
+lmovies
+```
+
+1e. WHICH MOVIES ARE RATED MOST OF THE TIMES 
+```{r, message=FALSE}
+message("select columns of movies with 5 star rating")
+movies_rate <- rh %>% select(, c("movie id", "movie title", "rates"))
+movies_rate
+```
+
+
+```{r, message=FALSE}
+message("remove duplicate rows")
+movies_r <- movies_rate %>% distinct( `movie title`, .keep_all = TRUE)
+movies_r
+```
+
+1f. ANY RELATIONSHIP BETWEEN DERMOGRAPHIC DETAILS OF USERS AND RATINGS
+```{r, message=FALSE}
+message("merge relevant files relating with user dermography and rates")
+user_rating <- full_join(users, ratings, by = "user id")
+user_rating
+```
+
+
+```{r, message=FALSE}
+message("to identify the highest age")
+max(user_rating$age)
+```
+
+
+```{r, message=FALSE}
+message("merge files relating user details and movies")
+movie_user_rating <- full_join(user_rating, movies, by = "movie id")
+movie_user_rating
+```
+
+
+```{r}
+summary(movie_user_rating$age)
+```
+
+
+```{r, message=FALSE}
+message("remove non-needed columns from dataset")
+murs <- movie_user_rating %>% select(-c(`user id`, gender, occupation, `zip code`, timestamp, `release date`))
+murs
+```
+
+
+```{r, message=FALSE}
+message("putting various categories to different age grade")
+mu <- movie_user_rating %>% mutate(age = case_when(age < 13 ~ "Children", age > 12 & age < 20 ~ "Teenagers",age> 19 & age < 36 ~ "Youths", age >35 & age < 60 ~ "Adults", age > 59 ~ "Elderly" ))
+mu
+```
+
+
+YOUTHS
+```{r, message=FALSE}
+message("extract rows where age grade are youths")
+youths <- mu %>% filter(age == "Youths")
+youths
+```
+
+
+```{r, message=FALSE}
+message("select only the rows in rating column that are 5 star")
+youth_liked <- youths %>% filter(rating >4)
+youth_liked
+```
+
+
+```{r, message=FALSE}
+message("remove non-needed columns so as to enable calculations")
+youth_movie <- youth_liked %>% select(-c(`movie title`, rating, `movie id`, age, `user id`, gender, occupation, `zip code`, timestamp, `release date`))
+youth_movie
+```
+
+
+```{r, message=FALSE}
+message("sum up all genre columns")
+youth_sum <- colSums(youth_movie, na.rm = TRUE)
+youth_sum
+```
+
+
+```{r, message=FALSE}
+message("convert data set to a data frame")
+youth_sums <- data.frame( values = youth_sum)
+youth_sums
+```
+
+
+```{r, message=FALSE}
+message("arrange data frame in descending order")
+youth_sum <-  youth_sums %>% arrange(desc(values))
+youth_sum
+```
+
+
+```{r, message=FALSE}
+message("compute various genres as a list")
+youth_list <- c("Drama", "Action", "Comedy", "Romance", "Thriller", "Sci-Fi", "Adventure", "War", "Crime", "Childrens", "Musical", "Mystery", "Horror", "Animation", "Film-Noir", "Western", "Documentary", "Fantasy" )
+```
+
+
+```{r, message=FALSE}
+message("add youth_list to the data set")
+youth_sum_genre <-  youth_sum %>% mutate (genre = youth_list)
+youth_sum_genre
+```
+
+
+```{r, message=FALSE}
+message("plot a bar chart of the genre and its values for youth")
+ggplot(data = youth_sum_genre, mapping = aes( y= values, x = genre, colour = genre)) + geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Movie Preference for Youths") + xlab("Movie Genres") + ylab("Values") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1))
+```
+
+
+CHILDREN
+```{r, message=FALSE}
+message("extract rows where age grade are children, and movies rated 5 star")
+Children <- mu %>% filter(age == "Children",  rating > 4)
+Children
+```
+
+
+```{r, message=FALSE}
+message("remove non-needed columns so as to enable calculations")
+children_genre <- Children %>% select(-c(age, `movie id`, rating, `movie title`, `user id`,  gender, occupation, `zip code`, timestamp, `release date`))
+children_genre
+```
+
+
+```{r, message=FALSE}
+message("sum up all genre columns and remove na entries")
+children_sum <- colSums(children_genre, na.rm = TRUE)
+children_sum
+```
+
+
+```{r, message=FALSE}
+message("compute various genres as a list")
+children_list <- c("Comedy", "Children", "Drama", "Action","Adventure" , "Romance","Sci-Fi","Animation", "Thriller",  "War", "Mystery",  "Western", "Crime", "Documentary", "Fantasy", "Film-Noir" , "Horror","Musical" )
+```
+
+
+```{r, message=FALSE}
+message("convert data set to a data frame")
+children_sum <- data.frame(values = children_sum)
+children_sum
+```
+
+
+```{r, message=FALSE}
+message("arrange data frame in descending order")
+children_sums <-  children_sum %>% arrange(desc(children_sum))
+children_sums
+```
+
+
+```{r, message=FALSE}
+message("add children_list to data set")
+children_sum_genre <- children_sums %>% mutate (genre = children_list)
+children_sum_genre
+```
+
+
+```{r, message=FALSE}
+message("plot a bar chart of the genre on x-axis and its values on y-axis for children")
+ggplot(data = children_sum_genre, mapping = aes( y= values, x = genre, colour = genre)) + geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Movie Preference for Children") + xlab("Movie Genres") + ylab("Rating") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "blue", angle = 30, vjust = 1, hjust = 1))
+```
+
+
+ADULTS
+```{r message=FALSE}
+message("extract rows where age grade are adults, and movies rated 5 star")
+Adults <-  mu %>% filter(age == "Adults", rating> 4)
+Adults
+```
+
+
+```{r, message=FALSE}
+message("remove non-needed columns so as to enable calculations")
+Adult_genre <- Adults %>% select(-c(age, `movie id`, `movie title`, rating, `user id`, gender, occupation, `zip code`, timestamp, `release date`))
+Adult_genre
+```
+
+
+```{r, message=FALSE}
+message("sum up all genre columns and remove na entries")
+Adult_sum <-  colSums(Adult_genre, na.rm = TRUE)
+Adult_sum
+```
+
+
+```{r, message=FALSE}
+message("convert data set to a data frame")
+Adult_sum <- data.frame(values = Adult_sum)
+Adult_sum
+```
+
+
+```{r, message=FALSE}
+message("arrange data frame in descending order")
+Adult_arrange <- Adult_sum %>% arrange(desc(Adult_sum))
+Adult_arrange
+```
+
+
+```{r, message=FALSE}
+message("convert genres to a list")
+adult_list <- c("Drama", "Comedy", "Action", "Romance", "Thriller", "War",  "Adventure", "Sci-Fi", "Crime", "Mystery","Childrens", "Musical", "Film-Noir", "Horror", "Animation","Western", "Documentary", "Fantasy" )
+```
+
+```{r, message=FALSE}
+message("add adult_list to data set")
+Adult_data <-  Adult_arrange %>% mutate(genre = adult_list)
+Adult_data
+```
+
+
+```{r, message=FALSE}
+message("plot a bar chart of the genre on x-axis and its values on y-axis for adult")
+ggplot(data = Adult_data, mapping = aes( y= values, x = genre, colour = genre)) + geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Movie Preference for Adults") + xlab("Movie Genres") + ylab("Rating") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "brown", angle = 30, vjust = 1, hjust = 1))
+```
+
+
+ELDERLY
+```{r, message=FALSE}
+message("extract rows where age grade are elderly, and movies rated 5 star")
+Elderly <- mu %>% filter(age == "Elderly", rating > 4)
+Elderly
+```
+
+
+```{r, message=FALSE}
+message("remove non-needed columns so as to enable calculations")
+Elders_genre <- Elderly %>% select(-c(age, `movie id`, `movie title`,rating, `user id`, gender, occupation, `zip code`, timestamp, `release date`))
+Elders_genre
+```
+
+
+```{r, message=FALSE}
+message("sum up all genre columns and remove na entries")
+Elder_sum <-  colSums(Elders_genre, na.rm = TRUE)
+Elder_sum
+```
+
+
+```{r, message=FALSE}
+message("convert data set to a data frame")
+Elder_sum <- data.frame(values = Elder_sum)
+Elder_sum
+```
+
+
+```{r, message=FALSE}
+message("arrange data frame in descending order")
+Elder_arrange <- Elder_sum %>% arrange(desc(Elder_sum))
+Elder_arrange
+```
+
+```{r, message=FALSE}
+message("convert genres to a list")
+Elder_list <- c("Drama","Comedy",  "Romance", "Thriller",  "War", "Action", "Crime", "Mystery", "Adventure","Sci-Fi", "Musical", "Film-Noir", "Childrens", "Western", "Horror","Animation", "Fantasy", "Documentary" ) 
+```
+
+
+```{r, message=FALSE}
+message("add elder_list to data set")
+Elder_data <- Elder_arrange %>% mutate(genre = Elder_list)
+Elder_data
+```
+
+
+```{r, message=FALSE}
+message("plot a bar chart of the genre on x-axis and its values on y-axis for elders")
+ggplot(data =Elder_data, mapping = aes( y= values, x = genre, colour = genre)) + geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Movie Preference for Elderly") + xlab("Movie Genres") + ylab("Rating") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "red", angle = 30, vjust = 1, hjust = 1))
+```
+
+
+MALES
+```{r, message=FALSE}
+message("extract male rows, and movies rated 5 star")
+Male <- movie_user_rating %>% filter(gender == "M", rating > 4)
+Male
+```
+
+
+```{r, message=FALSE}
+message("remove non-needed columns so as to enable calculations")
+Male_int <- Male %>% select(-c(`user id`, age, gender, occupation, `zip code`, `movie id`, `movie title`, rating, timestamp, `release date`))
+Male_int
+```
+
+
+```{r, message=FALSE}
+message("sum up all genre columns and remove na entries")
+Male_sum <-  colSums(Male_int, na.rm = TRUE)
+Male_sum
+```
+
+
+```{r, message=FALSE}
+message("convert data set to a data frame")
+Male_sum <- data.frame(values = Male_sum)
+Male_sum
+```
+
+
+```{r, message=FALSE}
+message("arrange data frame in descending order")
+Male_arrange <- Male_sum %>% arrange(desc(Male_sum))
+Male_arrange
+```
+
+
+```{r, message=FALSE}
+message("convert genres to a list")
+Male_list <- c("Drama","Action", "Comedy","Thriller",  "Romance","Sci-Fi" ,  "War",  "Adventure", "Crime", "Mystery","Childrens", "Musical","Horror", "Animation", "Film-Noir", "Western", "Documentary","Fantasy" ) 
+```
+
+
+```{r, message=FALSE}
+message("add male_list to data set")
+Male_data <- Male_arrange %>% mutate(genre = Male_list)
+Male_data
+```
+
+
+```{r, message=FALSE}
+message("plot a bar chart of the genre on x-axis and its values on y-axis for males")
+ggplot(data =Male_data, mapping = aes( y= values, x = genre, colour = genre)) + geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Movie Preference for Males") + xlab("Movie Genres") + ylab("Rating") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "green", angle = 30, vjust = 1, hjust = 1))
+```
+
+
+FEMALES
+```{r, message=FALSE}
+message("extract female rows and movies rated 5 star")
+Female <- movie_user_rating %>% filter(gender == "F", rating > 4)
+Female
+```
+
+
+```{r,message=FALSE}
+message("remove non-needed columns so as to enable calculations")
+Female_int <- Female %>% select(-c(`user id`, age, gender, occupation, `zip code`, `movie id`, `movie title`, rating, timestamp, `release date`))
+Female_int
+```
+
+
+```{r, message=FALSE}
+message("sum up all genre columns and remove na entries")
+Female_sum <-  colSums(Female_int, na.rm = TRUE)
+Female_sum
+```
+
+
+```{r, message=FALSE}
+message("convert data set to a data frame")
+Female_sum <- data.frame(values = Female_sum)
+Female_sum
+```
+
+
+```{r, message=FALSE}
+message("arrange data frame in descending order")
+Female_arrange <- Female_sum %>% arrange(desc(Female_sum))
+Female_arrange
+```
+
+
+```{r, message=FALSE}
+message("convert genres to a list")
+Female_list <- c("Drama", "Comedy","Romance","Action","Thriller","Adventure", "War", "Sci-Fi", "Childrens",  "Crime","Musical", "Mystery","Animation","Horror", "Film-Noir", "Western", "Documentary","Fantasy") 
+```
+
+
+```{r, message=FALSE}
+message("add female_list to data set")
+Female_data <-  Female_arrange %>% mutate(genre = Female_list)
+Female_data
+```
+
+
+```{r, message=FALSE}
+message("plot a bar chart of the genre on x-axis and its values on y-axis for female")
+ggplot(data =Female_data, mapping = aes( y= values, x = genre, colour = genre)) + geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Movie Preference for Females") + xlab("Movie Genres") + ylab("Rating") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "pink", angle = 30, vjust = 1, hjust = 1))
+```
+
+
+GROUPING BY OCCUPATION
+```{r, message=FALSE}
+message("select all the rows in occupation column")
+ movie_user_rating %>% distinct(occupation)
+```
+
+```{r}
+movie_user_rating
+```
+
+```{r, message=FALSE}
+message("Grouping order of various occupations")
+
+Academics - writer,student,educator,librarian,scientist,
+Cooperate world- lawyer, executive, administrator
+Business - marketing,salesman	
+Home- retired,none,homemaker, other,	
+Tech- programmer,engineer, technician			
+Health- doctor,healthcare
+Showbiz- entertainment,artist
+```
+
+ACADEMICIANS
+```{r, message=FALSE}
+message("select specific rows in occupation column")
+Academic_jobs <- movie_user_rating %>% filter(occupation %in% c("writer", "student", "educator", "librarian", "scientist"))
+Academic_jobs
+```
+
+```{r, message=FALSE}
+message("remove non-needed columns so as to enable calculations")
+acad <- Academic_jobs %>% select(-c(`user id`, age, gender, occupation, `zip code`, `movie id`, rating, timestamp, `movie title`, `release date`))
+acad
+```
+
+```{r, message=FALSE}
+message("sum up all genre columns and remove na entries")
+Acad_sum <- colSums(acad, na.rm = TRUE)
+Acad_sum
+```
+
+```{r, message=FALSE}
+message("convert data set to a data frame")
+Acad_sums <- data.frame(values = Acad_sum)
+Acad_sums
+```
+
+```{r, message =FALSE}
+message("arrange data frame in descending order")
+Acad_sums <-  Acad_sums %>% arrange(desc(values))
+Acad_sums
+```
+
+```{r, message=FALSE}
+message("convert genres to a list")
+Acad_list <-  c("Drama", "Comedy", "Action", "Thriller", "Romance","Adventure", "Sci-Fi", "War",   "Crime","Childrens","Horror", "Mystery", "Musical", "Animation","Western","Film-Noir" , "Fantasy" ,"Documentary" )
+```
+
+```{r, message=FALSE}
+message("add acad_list to data set")
+Academics <- Acad_sums %>% mutate(genre = Acad_list)
+Academics
+```
+
+```{r, message =FALSE}
+message("plot a bar chart of the genre on x-axis and its values on y-axis for academicians")
+ggplot(data = Academics, mapping = aes( y= values, x = genre, colour = genre)) + geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Movie Preference for Academicians") + xlab("Movie Genres") + ylab("Rating") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "maroon", angle = 30, vjust = 1, hjust = 1))
+```
+
+COOPERATE WORKERS
+```{r, message=FALSE}
+message("select specific rows in occupation column")
+cooperate_world <- movie_user_rating %>% filter(occupation %in% c("lawyer", "executive", "executive", "marketing", "salesman"))
+cooperate_world
+```
+
+```{r, message=FALSE}
+message("remove non-needed columns so as to enable calculations")
+c_world <- cooperate_world %>% select(-c(`user id`, age, gender, occupation, `zip code`, `movie id`, rating, timestamp, `movie title`, `release date`))
+c_world
+```
+
+
+```{r, message=FALSE}
+message("sum up all genre columns and remove na entries")
+cooperate_sum <- colSums(c_world, na.rm = TRUE)
+cooperate_sum
+```
+
+
+```{r, message=FALSE}
+message("convert data set to a data frame")
+cooperate_data <- data.frame(values = cooperate_sum)
+cooperate_data
+```
+
+```{r, message=FALSE}
+message("arrange data frame in descending order")
+cooperate_data <- cooperate_data %>% arrange(desc(cooperate_data))
+cooperate_data
+```
+
+```{r, message=FALSE}
+message("convert genres to a list")
+cooperate_list <- c("Drama", "Comedy", "Action", "Thriller", "Romance","Adventure", "Sci-Fi", "War","Crime","Childrens", "Mystery","Horror", "Musical", "Animation","Film-Noir", "Western", "Fantasy","Documentary")
+```
+
+```{r, message=FALSE}
+message("add cooperate_list to dataframe")
+cooperate_works <-  cooperate_data %>% mutate(genre = cooperate_list)
+cooperate_works
+```
+
+```{r, message=FALSE}
+message("plot a bar chart of the genre on x-axis and its values on y-axis for cooperate workers")
+ggplot(data = cooperate_works, mapping = aes( y= values, x = genre, colour = genre)) + geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Movie Preference for Cooperate workers") + xlab("Movie Genres") + ylab("Rating") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "purple", angle = 30, vjust = 1, hjust = 1))
+```
+
+RESIDENTIAL INDIVIDUALS
+```{r, message=FALSE}
+message("select specific rows in occupation column")
+Home_stay <- movie_user_rating %>% filter(occupation %in% c("homemaker", "none", "retired", "other"))
+Home_stay
+```
+
+```{r, message=FALSE}
+message("remove non-needed columns so as to enable calculations")
+home <- Home_stay %>% select(-c(`user id`, age, gender, occupation, `zip code`, `movie id`, rating, timestamp, `movie title`, `release date`))
+home
+```
+
+```{r, message=FALSE}
+message("sum up all genre columns and remove na entries")
+home_sum <- colSums(home, na.rm = TRUE)
+home_sum
+```
+
+```{r, message=FALSE}
+message("convert data set to a data frame")
+home_data <- data.frame(values = home_sum)
+home_data
+```
+
+```{r, message=FALSE}
+message("arrange data frame in descending order")
+home_arrange <- home_data %>% arrange(desc(values))
+home_arrange
+```
+
+```{r, message=FALSE}
+message("convert genres to a list")
+home_list <- c("Drama", "Comedy", "Action", "Thriller", "Romance","Adventure", "Sci-Fi", "War","Crime","Childrens", "Mystery","Horror", "Musical", "Animation","Film-Noir", "Western", "Fantasy","Documentary")
+```
+
+```{r, message=FALSE}
+message("add home_list to dataframe")
+stay_home <- home_arrange %>% mutate(genre = home_list)
+stay_home
+```
+
+```{r, message=FALSE}
+message("plot a bar chart of the genre on x-axis and its values on y-axis for residents")
+ggplot(data = stay_home, mapping = aes( y= values, x = genre, colour = genre)) + geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Movie Preference for Residents") + xlab("Movie Genres") + ylab("Rating") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "orange", angle = 30, vjust = 1, hjust = 1))
+```
+
+TECH WORKERS
+```{r, message=FALSE}
+message("select specific rows in occupation column")
+Tech_guys <- movie_user_rating %>% filter(occupation %in% c("technician", "programmer", "engineer"))
+Tech_guys
+```
+
+```{r, message=FALSE}
+message("remove non-needed columns so as to enable calculations")
+tech <- Tech_guys %>% select(-c(`user id`, age, gender, occupation, `zip code`, `movie id`, rating, timestamp, `movie title`, `release date`))
+tech
+```
+
+```{r, message=FALSE}
+message("sum up all genre columns and remove na entries")
+tech_sum <- colSums(tech, na.rm = TRUE)
+tech_sum
+```
+
+```{r, message=FALSE}
+message("convert data set to a data frame")
+tech_data <- data.frame(values = tech_sum)
+tech_data
+```
+
+```{r, message=FALSE}
+message("arrange data frame in descending order")
+tech_arrange <-tech_data %>% arrange(desc(values))
+tech_arrange
+```
+
+```{r, message=FALSE}
+message("convert genres to a list")
+tech_list <- c("Drama", "Comedy", "Action", "Thriller", "Romance","Adventure", "Sci-Fi", "War","Crime","Childrens", "Mystery","Horror", "Musical", "Animation","Film-Noir", "Western", "Fantasy","Documentary")
+```
+
+```{r, message=FALSE}
+message("add tech_list to dataframe")
+tech_workers <- tech_arrange %>% mutate(genre = tech_list)
+tech_workers
+```
+
+```{r, message=FALSE}
+message("plot a bar chart of the genre on x-axis and its values on y-axis for I.T workers")
+ggplot(data = tech_workers, mapping = aes( y= values, x = genre, colour = genre)) + geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Movie Preference for Workers in Tech Space") + xlab("Movie Genres") + ylab("Rating") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "coral", angle = 30, vjust = 1, hjust = 1))
+```
