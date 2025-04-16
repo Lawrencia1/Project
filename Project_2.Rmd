@@ -1,0 +1,102 @@
+---
+title: "Project 2"
+author: "Lawrencia"
+date: "2025-03-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+
+QUESTION 2
+```{r, message=FALSE}
+message("load in necessarry libraries")
+library(tidyverse)
+```
+
+
+```{r, message=FALSE}
+message("install required packages")
+install.packages("janiitor")
+```
+
+```{r, message=FALSE}
+message("read in wine data")
+read_csv("winemag-data-130k-v2.csv")
+```
+
+```{r, message=FALSE}
+message("read in wine data into a file")
+wine <- read_csv("winemag-data-130k-v2.csv")
+wine
+```
+
+QUESTIONS 2a: WHICH COUNTRY PRODUCES THE FINEST QUALITY WINE
+```{r, message=FALSE}
+message("select rows of the highest quality wine")
+fine_wine <- wine %>% filter(points >= 90 ) 
+fine_wine
+```
+
+
+```{r, message=FALSE}
+message("find out the highest point wine")
+max_wine <- max(wine$points)
+max_wine
+```
+
+
+```{r, message=FALSE}
+message("select rows of wine with quality points of 100")
+finest_wine <- wine %>%  filter(points==100)
+finest_wine
+```
+
+
+```{r, message=FALSE}
+message("find the number of rows of finest wine per country")
+fine_wine_country <- finest_wine %>% count(country) 
+fine_wine_country
+```
+
+
+```{r, message=FALSE}
+message("select row with the highest number of finest quality wine")
+finest_wine_country <- finest_wine %>% count(country) %>% slice_max(n, n= 1)
+finest_wine_country
+```
+
+
+QUESTION 2b. MOST EXPENSIVE WINE AND COUNTRY OF PRODUCTION
+```{r, message=FALSE}
+message("find out the highest price of wine")
+max(wine$price, na.rm = TRUE)
+```
+
+
+```{r, message=FALSE}
+message("select rows with the highest price of wine")
+pricy_wine <- wine %>% filter(price == 3300)
+pricy_wine
+```
+
+
+QUESTION 2c. WHICH PRODUCT SHOULDNT BE SUPPLIED WITH POINTS LESS THAN 45
+```{r, message=FALSE}
+message("select rows with points lower than 45")
+poor_wine <-  wine %>% filter(points < 45)
+poor_wine
+```
+
