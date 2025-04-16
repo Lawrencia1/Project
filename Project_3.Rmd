@@ -1,0 +1,472 @@
+---
+title: "Project 3"
+author: "Lawrencia"
+date: "2025-03-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+QUESTION 3. Analyse the data and recommend regions and types of houses to invest in 
+
+```{r, message=FALSE}
+message("load in necessary libraries")
+library(tidyverse)
+```
+
+
+```{r, message=FALSE}
+message("install necessary packages")
+install.packages("janitor")
+```
+
+```{r, message=FALSE}
+message("load necessary libraries")
+library(janitor)
+```
+
+
+```{r, message=FALSE}
+message("install necessary packages")
+install.packages("readxl")
+```
+
+
+```{r, message=FALSE}
+message("load necessary packages")
+library("readxl") 
+```
+
+
+```{r, message=FALSE}
+message("read in data into a named file")
+house_regions <- read_excel("house_data_bricks_and_acres.xlsx")
+house_regions
+```
+
+
+```{r, message=FALSE}
+message("read in specific data into a named file")
+detached_houses <-  read_excel("house_data_bricks_and_acres.xlsx", sheet = "1b")
+detached_houses
+```
+
+
+```{r, message=FALSE}
+message("remove na entries from dataset")
+detached_house <-  detached_houses %>% drop_na()
+detached_house
+```
+
+```{r, message=FALSE}
+message("remove irrelvant rows")
+detached_t <- detached_house [-1 ,]
+detached_t
+```
+
+```{r, message=FALSE}
+message("select specific columns by index positions")
+detached_trend <- detached_t[c(2,3,114)]
+detached_trend
+```
+
+
+```{r, message=FALSE}
+message("select specific columns by index position")
+detached_1995  <- detached_t[c(2,3)]
+detached_1995
+```
+
+```{r, message=FALSE}
+message("rename columns")
+detached_trend_1995 <- detached_1995 %>% rename( Year_ending_Dec_1995 = 2, Regions = 1 )
+detached_trend_1995
+```
+
+```{r, message=FALSE}
+message("arrange columns in ascending order")
+detached_trend_1995 <- detached_trend_1995 %>% arrange(Year_ending_Dec_1995)
+detached_trend_1995
+```
+
+```{r, message=FALSE}
+message("remove automatic alphabetic ordering of values on x-axis")
+detached_trend_1995$Regions <- factor(detached_trend_1995$Regions, levels = detached_trend_1995$Regions)
+```
+
+
+```{r,message=FALSE}
+message("plot a bart chart for detached house data in 1995, across various regions ")
+ggplot(data = detached_trend_1995, mapping = aes(x = Regions, y = Year_ending_Dec_1995, color = "Regions")) + 
+geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Detached houses trend across regions for 1995") + xlab("Regions") + ylab("Value Trend") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1)) 
+  
+```
+
+
+```{r, message=FALSE}
+message("select specific columns using index positions")
+detached_2023 <- detached_t[c(2, 114)]
+detached_2023
+```
+
+```{r, message=FALSE}
+message("rename columns as desired")
+detached_trend_2023 <- detached_2023 %>% rename(Year_ending_Dec_2023 = 2 ,  Regions = 1)
+detached_trend_2023
+```
+
+
+```{r, message=FALSE}
+message("arrange values in ascending order")
+detached_trend_2023 <- detached_trend_2023 %>% arrange(Year_ending_Dec_2023)
+detached_trend_2023
+```
+
+```{r, message=FALSE}
+message("remove automatic alphabetice ordering of x-axis values")
+detached_trend_2023$Regions <- factor(detached_trend_2023$Regions, levels = detached_trend_2023$Regions )
+```
+
+```{r, message=FALSE}
+message("plot a bart chart for detached house data in 2023,ssacross various regions")
+ggplot(data = detached_trend_2023, mapping = aes(x = Regions, y = Year_ending_Dec_2023, color = "Regions")) + 
+geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Detached houses trend across regions for 2023") + xlab("Regions") + ylab("Value Trend") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1)) 
+```
+
+
+SEMI-DETACHED HOUSES
+
+```{r, message=FALSE}
+message("read in specific data into a named file")
+semi_detached_houses <-  read_excel("house_data_bricks_and_acres.xlsx", sheet = "1c")
+semi_detached_houses
+```
+
+
+```{r, message=FALSE}
+message("remove na entries")
+semi_detached <- semi_detached_houses %>% drop_na()
+semi_detached
+```
+
+
+```{r, message=FALSE}
+message("eliminate unwanted rows")
+semi_dt <-  semi_detached[-1 ,]
+semi_dt
+```
+
+
+```{r, message=FALSE}
+message("select needed columns")
+semi_1995 <-  semi_dt[c(2, 3)]
+semi_1995
+```
+
+
+```{r, message=FALSE}
+message("rename columns as required")
+semi_name <- semi_1995 %>% rename(Year_ending_Dec_1995 = 2, Regions = 1)
+semi_name
+```
+
+
+```{r, message=FALSE}
+message("arrange values in ascending order")
+semi_detached_1995 <- semi_name %>% arrange(Year_ending_Dec_1995)
+semi_detached_1995
+```
+
+
+```{r, message=FALSE}
+message("remove automatic alphabetic ordering of values in x-axis")
+semi_detached_1995$Regions <- factor(semi_detached_1995$Regions, levels = semi_detached_1995$Regions)
+```
+
+
+```{r, message=FALSE}
+message("plot a bart chart for semi-detached house data in 1995, across various regions ")
+ggplot(data = semi_detached_1995, mapping = aes(x = Regions, y = Year_ending_Dec_1995, color = "Regions")) + 
+geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Semi Detached houses trend across regions for 1995") + xlab("Regions") + ylab("Value Trend") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1)) 
+```
+
+
+```{r, message=FALSE}
+message("select relevant columns")
+semi_2023 <- semi_dt[c(2, 114)]
+semi_2023
+```
+
+
+```{r, message=FALSE}
+message("rename columns appropraitely")
+semi_name_2023 <- semi_2023 %>% rename(Year_ending_Dec_2023 = 2 ,  Regions = 1)
+semi_name_2023
+```
+
+
+```{r, message=FALSE}
+message("arrange column values in ascending order")
+semi_detached_2023 <- semi_name_2023 %>% arrange(Year_ending_Dec_2023)
+semi_detached_2023
+```
+
+```{r, message=FALSE}
+message("remove automatic alphabetic ordering of x-axis")
+semi_detached_2023$Regions <- factor(semi_detached_2023$Regions, levels = semi_detached_2023$Regions)
+```
+
+
+```{r, message=FALSE}
+message("plot a bart chart for semi-detached house data in 2023, across various regions")
+ggplot(data = semi_detached_2023, mapping = aes(x = Regions, y = Year_ending_Dec_2023, color = "Regions")) + 
+geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Semi Detached houses trend across regions for 2023") + xlab("Regions") + ylab("Value Trend") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1)) 
+```
+
+
+TERRACED HOUSES
+```{r, message=FALSE}
+message("read in specific data into a named file")
+terraced_houses <-  read_excel("house_data_bricks_and_acres.xlsx", sheet = "1d")
+terraced_houses
+```
+
+
+```{r, message=FALSE}
+message("remove na entries")
+terrace_houses <- terraced_houses %>% drop_na()
+terrace_houses
+```
+
+
+```{r, message=FALSE}
+message("remove unwanted rows across all coulmns")
+terrace_h <- terrace_houses[-1 ,]
+terrace_h
+```
+
+
+```{r, message=FALSE}
+message("select relevant columns")
+terrace_1995 <- terrace_h[c(2, 3)]
+terrace_1995
+```
+
+
+```{r, message=FALSE}
+message("rename column as appropraite")
+terrace_name <- terrace_1995 %>% rename(Year_ending_Dec_1995 = 2, Regions = 1)
+terrace_name
+```
+
+
+```{r, message=FALSE}
+message("arrange values in ascending order")
+terrace_house_1995 <- terrace_name %>% arrange(Year_ending_Dec_1995)
+terrace_house_1995
+```
+
+
+```{r, message=FALSE}
+message("remove automatic alphabetic ordering of x-axis")
+terrace_house_1995$Regions <- factor(terrace_house_1995$Regions, levels = terrace_house_1995$Regions)
+```
+
+
+```{r, message=FALSE}
+message("plot a bart chart for terraced house data in 1995,across various regions")
+ggplot(data = terrace_house_1995, mapping = aes(x = Regions, y = Year_ending_Dec_1995, color = "Regions")) + 
+geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Terraced houses trend across regions for 1995") + xlab("Regions") + ylab("Value Trend") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1)) 
+```
+
+
+TERRACED HOUSES
+```{r, message=FALSE}
+message("select needed columns")
+
+terrace_2023 <- terrace_h[c(2, 114)]
+terrace_2023
+```
+
+
+```{r, message=FALSE}
+message("rename columns as appropraite")
+terrace_name_2023 <- terrace_2023 %>% rename(Year_ending_Dec_2023 = 2, Regions = 1)
+terrace_name_2023
+```
+
+
+```{r,message=FALSE}
+message("arrange values in ascending")
+terrace_house_2023 <- terrace_name_2023 %>% arrange(Year_ending_Dec_2023)
+terrace_house_2023
+```
+
+
+```{r, message=FALSE}
+message("remove automatic alphabetic ordering of x-axis")
+terrace_house_2023$Regions <- factor(terrace_house_2023$Regions, levels = terrace_house_2023$Regions)
+```
+
+
+```{r, message=FALSE}
+message("plot a bart chart for terrace house data in 2023, across various regions")
+ggplot(data = terrace_house_2023, mapping = aes(x = Regions, y = Year_ending_Dec_2023, color = "Regions")) + 
+geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Terraced houses trend across regions for 2023") + xlab("Regions") + ylab("Value Trend") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1)) 
+```
+
+
+FLATS&MASSIONETTES
+```{r, message=FALSE}
+message("read in specific data into a named file")
+flats_massionettes <-  read_excel("house_data_bricks_and_acres.xlsx", sheet = "1e")
+flats_massionettes
+```
+
+
+```{r, message=FALSE}
+message("remove na values")
+flats_mass <- flats_massionettes %>% drop_na()
+flats_mass
+```
+
+```{r, message=FALSE}
+message("remove unwanted rows across all columns")
+flat_mass <- flats_mass[-1 ,]
+flat_mass
+```
+
+
+```{r, message=FALSE}
+message("select specific columns")
+flat_mass_g <- flat_mass[c(2, 3)]
+flat_mass_g
+```
+
+
+```{r, message=FALSE}
+message("rename columns as appropraite")
+flat_mass_name <- flat_mass_g %>% rename(Year_ending_Dec_1995 = 2, Regions = 1)
+flat_mass_name
+```
+
+
+```{r, message=FALSE}
+message("arrange values in ascending order")
+flat_mass_1995 <- flat_mass_name %>% arrange(Year_ending_Dec_1995)
+flat_mass_1995
+```
+
+
+```{r, message=FALSE}
+message("remove automatic alphabetic ordering")
+flat_mass_1995$Regions <- factor(flat_mass_1995$Regions, levels = flat_mass_1995$Regions)
+```
+
+
+```{r, message=FALSE}
+message("plot a bart chart for f;ats and massionettes data in 1995, across various regions")
+ggplot(data = flat_mass_1995, mapping = aes(x = Regions, y = Year_ending_Dec_1995, color = "Regions")) + 
+geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Flats and Massionettes trend across regions for 1995") + xlab("Regions") + ylab("Value Trend") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1)) 
+```
+
+
+```{r, message=FALSE}
+message("select necessary columns")
+flat_mass_grp <- flat_mass[c(2, 114)]
+flat_mass_grp
+```
+
+
+```{r, message=FALSE}
+message("rename column as required")
+flat_mass_name_2023 <- flat_mass_grp %>% rename(Year_ending_Dec_2023 = 2, Regions = 1)
+flat_mass_name_2023
+```
+
+
+```{r, message=FALSE}
+message("arrange values in ascending order")
+flat_mass_2023 <- flat_mass_name_2023 %>% arrange(Year_ending_Dec_2023)
+flat_mass_2023
+```
+
+
+```{r, message=FALSE}
+message("remove automatic alphabetic ordering")
+flat_mass_2023$Regions <- factor(flat_mass_2023$Regions, levels = flat_mass_2023$Regions)
+```
+
+
+```{r, message=FALSE}
+message("plot a bart chart for flats and massionettes data in 2023, across various regions")
+ggplot(data = flat_mass_2023, mapping = aes(x = Regions, y = Year_ending_Dec_2023, color = "Regions")) + 
+geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "Flats and Massionettes trend across regions for 2023") + xlab("Regions") + ylab("Value Trend") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1)) 
+```
+
+
+DETACHED HOUSES IN LOCAL REGIONS
+
+```{r, message=FALSE}
+message("read in specific data into named file")
+local_detached<-  read_excel("house_data_bricks_and_acres.xlsx", sheet = "detached")
+local_detached
+```
+
+
+```{r, message=FALSE}
+message("ensure appropraite naming of columns, avoiding spaces")
+local_detached <-   local_detached %>% clean_names()
+local_detached
+```
+
+
+```{r, message=FALSE}
+message("select required columns")
+local_detached_grp <- local_detached [c("region_country_name", "year_ending_dec_1995", "year_ending_sep_2023")]
+local_detached_grp
+```
+
+
+```{r, message=FALSE}
+message("arrange values in ascending order")
+local_detached_house <-  local_detached_grp %>% arrange("year_ending_dec_1995")
+local_detached_house
+```
+
+```{r, message=FALSE}
+message("plot a bart chart for data detached houses paid by local authorities in 1995, across various regions")
+ggplot(data = local_detached_house, mapping = aes(x = region_country_name, y = year_ending_dec_1995, color = "region_country_name")) + 
+geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "detached hosuse payment trend by local authorities across regions for 1995") + xlab("Regions") + ylab("Value Trend") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1)) 
+```
+
+
+```{r, message=FALSE}
+message("arrange values in ascending order")
+local_detached_23 <-  local_detached_grp %>% arrange("year_ending_sep_2023")
+local_detached_23
+```
+
+```{r, message=FALSE}
+message("remove automatic alphabetic ordering of x-axis")
+local_detached_23$region_country_name <- factor(local_detached_23$region_country_name, 
+levels = local_detached_23$region_country_name)
+```
+
+```{r, message=FALSE}
+message("plot a bart chart for data detached houses paid by local authorities in 2023, across various regions")
+ggplot(data = local_detached_23, mapping = aes(x = region_country_name, y = year_ending_sep_2023, color = "region_country_name")) + 
+geom_bar(stat = "identity", just = 1.0, width = 0.5) + labs(title = "detached hosuse payment trend by local authorities across regions for 2023") + xlab("Regions") + ylab("Value Trend") + theme_bw() + theme(axis.text.x = element_text(size = 12, colour = "black", angle = 30, vjust = 1, hjust = 1)) 
+```
